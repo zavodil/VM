@@ -111,7 +111,6 @@ async function accountState(near, accountId) {
 }
 
 async function addKey(near, publicKey, accessKey) {
-  const wallet = await (await near.selector).wallet();
   const action = {
     type: "AddKey",
     params: {
@@ -119,7 +118,11 @@ async function addKey(near, publicKey, accessKey) {
       accessKey
     },
   };
-  return await wallet.signAndSendTransactions({ action });
+
+  return await wallet.signAndSendTransaction({
+    receiverId: contractName,
+    actions: [action]
+  });
 }
 
 async function sendTransactions(near, functionCalls) {

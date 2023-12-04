@@ -1607,10 +1607,11 @@ export default class VM {
         }
       },
       addKey: (... args) => {
+        console.log("vm addKey", args);
         return this.near.addKey(args[0], args[1]).then((e) => {
           console.log(e);
-          setLoading(false);
-          onHide();
+          //setLoading(false);
+          //onHide();
         });
       },
       deleteKey: (... args) => {
