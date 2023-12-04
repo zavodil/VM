@@ -1607,12 +1607,11 @@ export default class VM {
         }
       },
       addKey: (... args) => {
-       return this.confirmTransactions([
-          {
-            publicKey: args[0],
-            accessKey: args[1]
-          },
-        ]);
+        return this.near.addKey(args[0], args[1]).then((e) => {
+          console.log(e);
+          setLoading(false);
+          onHide();
+        });
       },
       deleteKey: (... args) => {
 

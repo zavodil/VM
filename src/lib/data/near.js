@@ -110,6 +110,18 @@ async function accountState(near, accountId) {
   return await account.state();
 }
 
+async function addKey(near, publicKey, accessKey) {
+  const wallet = await (await near.selector).wallet();
+  const action = {
+    type: "AddKey",
+    params: {
+      publicKey,
+      accessKey
+    },
+  };
+  return await wallet.signAndSendTransactions({ action });
+}
+
 async function sendTransactions(near, functionCalls) {
   try {
     const wallet = await (await near.selector).wallet();
@@ -319,6 +331,8 @@ async function _initNear({
     functionCall(_near, contractName, methodName, args, gas, deposit);
   _near.sendTransactions = (transactions) =>
     sendTransactions(_near, transactions);
+  _near.addKey = (publicKey, accessKey) =>
+      addKey(_near, publicKey, accessKey);
 
   _near.contract = setupContract(_near, config.contractName, {
     viewMethods: [
