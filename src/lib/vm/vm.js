@@ -1606,6 +1606,17 @@ export default class VM {
           ]);
         }
       },
+      addKey: (... args) => {
+       return this.confirmTransactions([
+          {
+            publicKey: args[0],
+            accessKey: args[1]
+          },
+        ]);
+      },
+      deleteKey: (... args) => {
+
+      },
     };
 
     const vmJSON = {
