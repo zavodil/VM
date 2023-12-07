@@ -35,6 +35,7 @@ import { Parser } from "acorn";
 import jsx from "acorn-jsx";
 import { ethers } from "ethers";
 import { Web3ConnectButton } from "../components/ethers";
+import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -262,6 +263,7 @@ const GlobalInjected = deepFreeze(
     Uint8Array,
     Map,
     Set,
+    DirectSecp256k1HdWallet
   })
 );
 
@@ -830,6 +832,8 @@ class VmStack {
         return (obj[key] *= right);
       } else if (code.operator === "/=") {
         return (obj[key] /= right);
+      } else if (code.operator === "^=") {
+        return(obj[key] ^= right);
       } else if (code.operator === "??=") {
         return (obj[key] ??= right);
       } else {
@@ -913,6 +917,14 @@ class VmStack {
         return left !== right;
       } else if (code.operator === "in") {
         return left in right;
+      } else if (code.operator === "^") {
+        return left ^ right;
+      } else if (code.operator === ">>") {
+        return left >> right;
+      } else if (code.operator === ">>>") {
+        return left >>> right;
+      } else if (code.operator === "<<") {
+        return left << right;
       } else {
         throw new Error(
           "Unknown BinaryExpression operator '" + code.operator + "'"
@@ -1607,15 +1619,10 @@ export default class VM {
         }
       },
       addKey: (... args) => {
-        console.log("vm addKey", args);
-        return this.near.addKey(args[0], args[1]).then((e) => {
-          console.log(e);
-          //setLoading(false);
-          //onHide();
-        });
+        return this.near.addKey(args[0], args[1]);
       },
       deleteKey: (... args) => {
-
+        // TODO
       },
     };
 
