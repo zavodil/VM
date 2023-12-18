@@ -36,6 +36,7 @@ import jsx from "acorn-jsx";
 import { ethers } from "ethers";
 import { Web3ConnectButton } from "../components/ethers";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
+import { CompositeClient, SubaccountClient, Network, LocalWallet } from '@dydxprotocol/v4-client-js';
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -207,6 +208,30 @@ const Keywords = {
   styled: true,
 };
 
+const placeOrder = async (network, mnemonic, BECH32_PREFIX, subaccountNumber, params) => {
+  const c = await CompositeClient.connect(network);
+
+  const wallet = await LocalWallet.fromMnemonic(mnemonic, BECH32_PREFIX);
+  const subaccount = new SubaccountClient(wallet, subaccountNumber);
+
+  const {
+    marketId,
+    type,
+    side,
+    price,
+    size,
+    clientId,
+    timeInForce,
+    goodTilTimeInSeconds,
+    execution,
+    postOnly,
+    reduceOnly,
+    triggerPrice,
+  } = params || {};
+
+  return c.placeOrder(subaccount, marketId, type, side, price, size, clientId, timeInForce, goodTilTimeInSeconds, execution, postOnly, reduceOnly, triggerPrice);
+}
+
 const GlobalInjected = deepFreeze(
   cloneDeep({
     // Functions
@@ -263,7 +288,12 @@ const GlobalInjected = deepFreeze(
     Uint8Array,
     Map,
     Set,
-    DirectSecp256k1HdWallet
+    DirectSecp256k1HdWallet,
+    CompositeClient,
+    SubaccountClient,
+    Network,
+    LocalWallet,
+    placeOrder,
   })
 );
 
@@ -1866,6 +1896,7 @@ export default class VM {
         require: this.vmRequire.bind(this),
       },
       Ethers,
+      CompositeClient,
       WebSocket: (...args) => {
         const websocket = new WebSocket(...args);
         this.websockets.push(websocket);
