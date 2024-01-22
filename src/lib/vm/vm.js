@@ -36,7 +36,14 @@ import jsx from "acorn-jsx";
 import { ethers } from "ethers";
 import { Web3ConnectButton } from "../components/ethers";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
-import { CompositeClient, SubaccountClient, Network, LocalWallet } from '@dydxprotocol/v4-client-js';
+import {
+  CompositeClient,
+  SubaccountClient,
+  Network,
+  LocalWallet,
+  ValidatorClient,
+  OrderFlags
+} from '@dydxprotocol/v4-client-js';
 
 // Radix:
 import * as Accordion from "@radix-ui/react-accordion";
@@ -208,7 +215,7 @@ const Keywords = {
   styled: true,
 };
 
-const placeOrder = async (network, mnemonic, BECH32_PREFIX, subaccountNumber, params) => {
+const placeDydxOrder = async (network, mnemonic, BECH32_PREFIX, subaccountNumber, params) => {
   const c = await CompositeClient.connect(network);
 
   const wallet = await LocalWallet.fromMnemonic(mnemonic, BECH32_PREFIX);
@@ -231,6 +238,46 @@ const placeOrder = async (network, mnemonic, BECH32_PREFIX, subaccountNumber, pa
 
   return c.placeOrder(subaccount, marketId, type, side, price, size, clientId, timeInForce, goodTilTimeInSeconds, execution, postOnly, reduceOnly, triggerPrice);
 }
+
+
+const cancelDydxOrder = async (network, mnemonic, BECH32_PREFIX, subaccountNumber, params) => {
+  const c = await CompositeClient.connect(network);
+
+  const wallet = await LocalWallet.fromMnemonic(mnemonic, BECH32_PREFIX);
+  const subaccount = new SubaccountClient(wallet, subaccountNumber);
+
+  let {
+    clientId,
+    orderFlags,
+    marketId,
+    goodTilBlock,
+    goodTilTimeInSeconds
+  } = params || {};
+
+  /*if (orderFlags === OrderFlags.SHORT_TERM && !goodTilBlock) {
+    const SHORT_BLOCK_FORWARD = 3;
+    goodTilBlock = await c.validatorClient.get.latestBlockHeight() + SHORT_BLOCK_FORWARD;
+  }
+
+  console.log("goodTilBlock", goodTilBlock);*/
+
+  return c.cancelOrder(subaccount, clientId, orderFlags, marketId, goodTilBlock, goodTilTimeInSeconds);
+}
+
+const getDydxLatestBlockHeight = async (network) => {
+  const c = await CompositeClient.connect(network)
+
+  return c.validatorClient.get.latestBlockHeight();
+}
+
+const getDydxAccountBalances = async (network, dydxAddress) => {
+  const c = await CompositeClient.connect(network)
+
+  console.log("c.validatorClient", c.validatorClient)
+
+  return c.validatorClient.get.getAccountBalances(dydxAddress);
+}
+
 
 const GlobalInjected = deepFreeze(
   cloneDeep({
@@ -293,7 +340,10 @@ const GlobalInjected = deepFreeze(
     SubaccountClient,
     Network,
     LocalWallet,
-    placeOrder,
+    placeDydxOrder,
+    cancelDydxOrder,
+    getDydxAccountBalances,
+    getDydxLatestBlockHeight
   })
 );
 
