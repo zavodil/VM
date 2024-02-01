@@ -41,8 +41,7 @@ import {
   SubaccountClient,
   Network,
   LocalWallet,
-  ValidatorClient,
-  OrderFlags
+  FaucetClient,
 } from '@dydxprotocol/v4-client-js';
 
 // Radix:
@@ -239,6 +238,31 @@ const placeDydxOrder = async (network, mnemonic, BECH32_PREFIX, subaccountNumber
   return c.placeOrder(subaccount, marketId, type, side, price, size, clientId, timeInForce, goodTilTimeInSeconds, execution, postOnly, reduceOnly, triggerPrice);
 }
 
+const faucetDydx = async (dydxAddress, subaccountNumber) => {
+  let faucet = new FaucetClient("https://faucet.v4testnet.dydx.exchange");
+  return faucet?.fill(dydxAddress, subaccountNumber, 100);
+}
+
+const placeDydxShortOrder = async (network, mnemonic, BECH32_PREFIX, subaccountNumber, params) => {
+  const c = await CompositeClient.connect(network);
+
+  const wallet = await LocalWallet.fromMnemonic(mnemonic, BECH32_PREFIX);
+  const subaccount = new SubaccountClient(wallet, subaccountNumber);
+
+  const {
+    marketId,
+    side,
+    price,
+    size,
+    clientId,
+    goodTilBlock,
+    timeInForce,
+    reduceOnly,
+  } = params || {};
+
+  return c.placeShortTermOrder(subaccount, marketId, side, price, size, clientId, goodTilBlock, timeInForce, reduceOnly);
+}
+
 
 const cancelDydxOrder = async (network, mnemonic, BECH32_PREFIX, subaccountNumber, params) => {
   const c = await CompositeClient.connect(network);
@@ -341,9 +365,11 @@ const GlobalInjected = deepFreeze(
     Network,
     LocalWallet,
     placeDydxOrder,
+    placeDydxShortOrder,
     cancelDydxOrder,
     getDydxAccountBalances,
-    getDydxLatestBlockHeight
+    getDydxLatestBlockHeight,
+    faucetDydx
   })
 );
 
