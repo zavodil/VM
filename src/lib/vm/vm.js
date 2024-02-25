@@ -278,13 +278,6 @@ const cancelDydxOrder = async (network, mnemonic, BECH32_PREFIX, subaccountNumbe
     goodTilTimeInSeconds
   } = params || {};
 
-  /*if (orderFlags === OrderFlags.SHORT_TERM && !goodTilBlock) {
-    const SHORT_BLOCK_FORWARD = 3;
-    goodTilBlock = await c.validatorClient.get.latestBlockHeight() + SHORT_BLOCK_FORWARD;
-  }
-
-  console.log("goodTilBlock", goodTilBlock);*/
-
   return c.cancelOrder(subaccount, clientId, orderFlags, marketId, goodTilBlock, goodTilTimeInSeconds);
 }
 
@@ -296,8 +289,6 @@ const getDydxLatestBlockHeight = async (network) => {
 
 const getDydxAccountBalances = async (network, dydxAddress) => {
   const c = await CompositeClient.connect(network)
-
-  console.log("c.validatorClient", c.validatorClient)
 
   return c.validatorClient.get.getAccountBalances(dydxAddress);
 }
@@ -1723,12 +1714,6 @@ export default class VM {
             },
           ]);
         }
-      },
-      addKey: (... args) => {
-        return this.near.addKey(args[0], args[1]);
-      },
-      deleteKey: (... args) => {
-        // TODO
       },
     };
 
